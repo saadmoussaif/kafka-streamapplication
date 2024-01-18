@@ -1,0 +1,79 @@
+server:
+  port: 9785
+
+spring:
+
+  integration:
+    poller:
+      fixed-delay: 1000
+
+  cloud:
+    stream:
+      bindings:
+        # consume data from R1
+        pageEventConsumer-in-0:
+          destination: R1
+
+
+        # each period send data
+        pageEventSupplier-out-0:
+          destination: R2
+
+        #CarPostion
+        carPositionSupplier-out-0:
+           destination : car_position
+
+        # traitment temp reel: take it from R1 analyse it and send it to R4
+        kStreamKStreamFunction-in-0:
+             destination: R2
+        kStreamKStreamFunction-out-0:
+             destination: R4
+
+        # read data from R1 and send it to R3 :
+        pageEventFunction-in-0:
+          destination: R1
+        pageEventFunction-out-0:
+          destination: R3
+
+        kStreamKStreamFunctionCar-in-0:
+          destination: car_position
+        kStreamKStreamFunctionCar-out-0:
+           destination: car_position_web
+
+      poller:
+        fixed-delay: 100
+    function:
+      definition: pageEventConsumer;pageEventSupplier;pageEventFunction;kStreamKStreamFunction;carPositionSupplier;kStreamKStreamFunctionCar
+
+
+#spring:
+#  cloud:
+#    stream:
+#      bindings:
+#        # consume data from R1
+#        pageEventConsumer-in-0:
+#          destination: R1
+#        # each period send data
+#        pageEventSupplier-out-0:
+#          destination: R2
+#
+#        # take data from topic R1 and send it To R3
+#        pageEventFunction-in-0:
+#          destination: R1
+#        pageEventFunction-out-0:
+#          destination: R3
+#
+#        # traitment temp reel: take it from R1 analyse it and send it to R4
+#        kStreamKStreamFunction-in-0:
+#          destination: R2
+#        kStreamKStreamFunction-out-0:
+#          destination: R4
+#
+#
+#
+#      poller:
+#        fixed-delay: 100
+#    function:
+#      definition: pageEventConsumer;pageEventSupplier;pageEventFunction;kStreamKStreamFunction
+
+

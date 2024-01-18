@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Analytics</title>
+    <!-- Include Chart.js library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+<canvas id="analyticsChart" width="600" height="400"></canvas>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var pages = ["P1", "P2"];
+        var colors = ["rgba(0, 255, 0, 0.5)", "rgba(255, 0, 0, 0.5)"];
+        var datasets = [];
+
+        // Initialize datasets with empty data
+        pages.forEach(function (page, index) {
+            datasets.push({
+                label: page,
+                data: [],
+                backgroundColor: colors[index],
+                borderColor: colors[index],
+                borderWidth: 1,
+                fill: false
+            });
+        });
+
+        var ctx = document.getElementById('analyticsChart').getContext('2d');
+        var analyticsChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: datasets
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    x: {
+                        type: 'linear',
+                        position: 'bottom'
+                    },
+                    y: {
+                        min: 0
+                    }
+                }
+            }
+        });
+
+        var analyticsEventSource = new EventSource("/analytics");
+        analyticsEventSource.addEventListener("message", function (event) {
+            var data = JSON.parse(event.data);
+            var timestamp = new Date().getTime();
+
+            analyticsChart.data.labels.push(timestamp);
+
+            pages.forEach(function (page, index) {
+                var value = data[page];
+                analyticsChart.data.datasets[index].data.push(value);
+
+                // Remove the oldest data point if the number of data points exceeds a certain limit
+                if (analyticsChart.data.datasets[index].data.length > 20) {
+                    analyticsChart.data.datasets[index].data.shift();
+                    analyticsChart.data.labels.shift();
+                }
+            });
+
+            // Update the chart
+            analyticsChart.update();
+        });
+    });
+</script>
+</body>
+</html>
